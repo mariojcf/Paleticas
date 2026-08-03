@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Paletica - Pedidos Apto 202</title>
-    <!-- Tailwind CSS para un diseño moderno y rápido -->
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-amber-50 min-h-screen pb-24 font-sans">
@@ -22,7 +21,7 @@
             <p class="text-xs text-gray-600">¡Haz tu pedido y te lo llevamos a tu puerta o pasas a traerlo!</p>
         </div>
 
-        <!-- Menú de Helados por Categoria -->
+        <!-- Menú de Helados por Categoría -->
         <div id="catalog" class="space-y-6"></div>
 
     </main>
@@ -46,37 +45,47 @@
     </div>
 
     <script>
-        // === 1. BASE DE DATOS LOCAL Y DISPONIBILIDAD ===
-        // Cambia 'disponible: false' cuando un sabor se te agote.
+        // === MENÚ COMPLETO Y CONTROL DE DISPONIBILIDAD ===
+        // Simplemente cambia 'disponible: true' o 'disponible: false' según tu inventario actual
         const inventario = [
-            // Especiales
-            { id: '1', nombre: 'Margarita de Sandía', categoria: 'Especiales 🍉', disponible: true },
+            // Especiales (Cóctel)
+            { id: '1', nombre: 'Margarita de Sandía 🍹', categoria: 'Especiales', disponible: true },
+            { id: '2', nombre: 'Piña Colada 🍹', categoria: 'Especiales', disponible: false },
+            { id: '3', nombre: 'Mojito de Fresa 🍹', categoria: 'Especiales', disponible: false },
             
             // Frutales
-            { id: '2', nombre: 'Fresa', categoria: 'Frutales 🍓', disponible: true },
-            { id: '3', nombre: 'Piña Pepita', categoria: 'Frutales 🍓', disponible: true },
-            { id: '4', nombre: 'Mango', categoria: 'Frutales 🍓', disponible: true },
-            { id: '5', nombre: 'Maracuyá', categoria: 'Frutales 🍓', disponible: false },
+            { id: '4', nombre: 'Fresa 🍓', categoria: 'Frutales', disponible: true },
+            { id: '5', nombre: 'Maracuyá 🍊', categoria: 'Frutales', disponible: false },
+            { id: '6', nombre: 'Frutos del Bosque 🫐', categoria: 'Frutales', disponible: false },
+            { id: '7', nombre: 'Guanábana 🍈', categoria: 'Frutales', disponible: false },
+            { id: '8', nombre: 'Piña Pepita 🍍', categoria: 'Frutales', disponible: true },
+            { id: '9', nombre: 'Mango 🥭', categoria: 'Frutales', disponible: true },
             
             // Cremosos
-            { id: '6', nombre: 'Chocolate', categoria: 'Cremosos 🍫', disponible: true },
-            { id: '7', nombre: 'Coco', categoria: 'Cremosos 🍫', disponible: true },
-            
-            // Veteados
-            { id: '8', nombre: 'Fresas con Crema', categoria: 'Veteados 🍦', disponible: true },
-            { id: '9', nombre: 'Veteado de Piña', categoria: 'Veteados 🍦', disponible: true },
-            { id: '10', nombre: 'Veteado de Mora', categoria: 'Veteados 🍦', disponible: true },
-            { id: '11', nombre: 'Veteado de Mango', categoria: 'Veteados 🍦', disponible: true },
+            { id: '10', nombre: 'Chocolate 🍫', categoria: 'Cremosos', disponible: true },
+            { id: '11', nombre: 'Coco 🥥', categoria: 'Cremosos', disponible: true },
+            { id: '12', nombre: 'Café ☕', categoria: 'Cremosos', disponible: false },
+            { id: '13', nombre: 'Moka ☕🍫', categoria: 'Cremosos', disponible: false },
+            { id: '14', nombre: 'Vainilla 🍦', categoria: 'Cremosos', disponible: false },
 
-            // Cobertura Premium
-            { id: '12', nombre: 'Chocolate con Cobertura', categoria: 'Cobertura Premium 🍫', disponible: true },
-            { id: '13', nombre: 'Coco con Cobertura', categoria: 'Cobertura Premium 🍫', disponible: true },
-            { id: '14', nombre: 'Fresa con Cobertura', categoria: 'Cobertura Premium 🍫', disponible: true },
+            // Veteados
+            { id: '15', nombre: 'Fresas con Crema 🍓', categoria: 'Veteados', disponible: true },
+            { id: '16', nombre: 'Veteado de Piña 🍍', categoria: 'Veteados', disponible: false },
+            { id: '17', nombre: 'Veteado de Mora 🫐', categoria: 'Veteados', disponible: true },
+            { id: '18', nombre: 'Veteado de Mango 🥭', categoria: 'Veteados', disponible: false },
+
+            // Cobertura Chocolate Premium
+            { id: '19', nombre: 'Chocolate con Cobertura 🍫', categoria: 'Cobertura Premium', disponible: true },
+            { id: '20', nombre: 'Coco con Cobertura 🥥', categoria: 'Cobertura Premium', disponible: true },
+            { id: '21', nombre: 'Fresa con Cobertura 🍓', categoria: 'Cobertura Premium', disponible: true },
+
+            // Power / Saludables
+            { id: '22', nombre: 'Clean Detox 🥒', categoria: 'Power', disponible: false },
+            { id: '23', nombre: 'Renew 🍊', categoria: 'Power', disponible: false }
         ];
 
         let pedido = {};
 
-        // === 2. RENDERIZAR CATÁLOGO ===
         function cargarCatalogo() {
             const container = document.getElementById('catalog');
             const categorias = [...new Set(inventario.map(item => item.categoria))];
@@ -114,7 +123,6 @@
             });
         }
 
-        // === 3. LÓGICA DEL CARRITO ===
         function cambiarCantidad(id, delta) {
             const actual = pedido[id] || 0;
             const nueva = Math.max(0, actual + delta);
@@ -141,7 +149,6 @@
             }
         }
 
-        // === 4. ENVIAR A WHATSAPP ===
         function enviarPedido() {
             const apto = document.getElementById('apto-input').value.trim();
             if (!apto) {
@@ -163,7 +170,6 @@
             window.open(url, '_blank');
         }
 
-        // Inicializar
         cargarCatalogo();
     </script>
 </body>
