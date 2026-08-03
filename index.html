@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paletica - Pedidos Apto 202</title>
+    <!-- Tailwind CSS para un diseño moderno y rápido -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-amber-50 min-h-screen pb-24 font-sans">
+
+    <!-- Header -->
+    <header class="bg-emerald-700 text-white p-4 text-center shadow-md sticky top-0 z-10">
+        <h1 class="text-2xl font-bold tracking-wide">🍦 PALETICA</h1>
+        <p class="text-xs text-emerald-100">Paletas de Fruta Naturales | Torre Norte Apto. 202</p>
+    </header>
+
+    <main class="max-w-md mx-auto p-4 space-y-6">
+        
+        <!-- Banner Informativo -->
+        <div class="bg-white p-3 rounded-xl border border-emerald-200 shadow-sm text-center">
+            <p class="text-xs text-gray-600">¡Haz tu pedido y te lo llevamos a tu puerta o pasas a traerlo!</p>
+        </div>
+
+        <!-- Menú de Helados por Categoria -->
+        <div id="catalog" class="space-y-6"></div>
+
+    </main>
+
+    <!-- Barra Inferior de Confirmación / Carrito -->
+    <div id="cart-bar" class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-lg hidden">
+        <div class="max-w-md mx-auto space-y-3">
+            <div class="flex justify-between items-center">
+                <span class="font-bold text-gray-700">Total ítems: <span id="total-count">0</span></span>
+                <span id="cart-summary" class="text-xs text-gray-500"></span>
+            </div>
+            
+            <input type="text" id="apto-input" placeholder="Tu Torre y Apto (ej. Torre Norte 302)" 
+                   class="w-full text-sm p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
+            
+            <button onclick="enviarPedido()" 
+                    class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-lg shadow flex items-center justify-center gap-2">
+                <span>Reservar por WhatsApp</span> 📱
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // === 1. BASE DE DATOS LOCAL Y DISPONIBILIDAD ===
+        // Cambia 'disponible: false' cuando un sabor se te agote.
+        const inventario = [
+            // Especiales
+            { id: '1', nombre: 'Margarita de Sandía', categoria: 'Especiales 🍉', disponible: true },
+            
+            // Frutales
+            { id: '2', nombre: 'Fresa', categoria: 'Frutales 🍓', disponible: true },
+            { id: '3', nombre: 'Piña Pepita', categoria: 'Frutales 🍓', disponible: true },
+            { id: '4', nombre: 'Mango', categoria: 'Frutales 🍓', disponible: true },
+            { id: '5', nombre: 'Maracuyá', categoria: 'Frutales 🍓', disponible: false },
+            
+            // Cremosos
+            { id: '6', nombre: 'Chocolate', categoria: 'Cremosos 🍫', disponible: true },
+            { id: '7', nombre: 'Coco', categoria: 'Cremosos 🍫', disponible: true },
+            
+            // Veteados
+            { id: '8', nombre: 'Fresas con Crema', categoria: 'Veteados 🍦', disponible: true },
+            { id: '9', nombre: 'Veteado de Piña', categoria: 'Veteados 🍦', disponible: true },
+            { id: '10', nombre: 'Veteado de Mora', categoria: 'Veteados 🍦', disponible: true },
+            { id: '11', nombre: 'Veteado de Mango', categoria: 'Veteados 🍦', disponible: true },
+
+            // Cobertura Premium
+            { id: '12', nombre: 'Chocolate con Cobertura', categoria: 'Cobertura Premium 🍫', disponible: true },
+            { id: '13', nombre: 'Coco con Cobertura', categoria: 'Cobertura Premium 🍫', disponible: true },
+            { id: '14', nombre: 'Fresa con Cobertura', categoria: 'Cobertura Premium 🍫', disponible: true },
+        ];
+
+        let pedido = {};
+
+        // === 2. RENDERIZAR CATÁLOGO ===
+        function cargarCatalogo() {
+            const container = document.getElementById('catalog');
+            const categorias = [...new Set(inventario.map(item => item.categoria))];
+
+            container.innerHTML = '';
+
+            categorias.forEach(cat => {
+                const sec = document.createElement('div');
+                sec.innerHTML = `<h2 class="font-bold text-gray-800 text-lg mb-2">${cat}</h2>`;
+                const list = document.createElement('div');
+                list.className = 'grid grid-cols-1 gap-2';
+
+                inventario.filter(item => item.categoria === cat).forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = `p-3 rounded-lg border flex justify-between items-center ${item.disponible ? 'bg-white border-gray-200' : 'bg-gray-100 border-gray-200 opacity-60'}`;
+                    
+                    card.innerHTML = `
+                        <div>
+                            <p class="font-medium text-gray-800">${item.nombre}</p>
+                            ${!item.disponible ? '<span class="text-xs text-red-500 font-bold">Agotado</span>' : ''}
+                        </div>
+                        ${item.disponible ? `
+                            <div class="flex items-center gap-2">
+                                <button onclick="cambiarCantidad('${item.id}', -1)" class="w-8 h-8 rounded-full bg-gray-200 text-gray-700 font-bold">-</button>
+                                <span id="cant-${item.id}" class="font-bold w-4 text-center">0</span>
+                                <button onclick="cambiarCantidad('${item.id}', 1)" class="w-8 h-8 rounded-full bg-emerald-600 text-white font-bold">+</button>
+                            </div>
+                        ` : ''}
+                    `;
+                    list.appendChild(card);
+                });
+
+                sec.appendChild(list);
+                container.appendChild(sec);
+            });
+        }
+
+        // === 3. LÓGICA DEL CARRITO ===
+        function cambiarCantidad(id, delta) {
+            const actual = pedido[id] || 0;
+            const nueva = Math.max(0, actual + delta);
+            
+            if (nueva === 0) {
+                delete pedido[id];
+            } else {
+                pedido[id] = nueva;
+            }
+
+            document.getElementById(`cant-${id}`).innerText = nueva;
+            actualizarBarraCarrito();
+        }
+
+        function actualizarBarraCarrito() {
+            const total = Object.values(pedido).reduce((a, b) => a + b, 0);
+            const cartBar = document.getElementById('cart-bar');
+            
+            if (total > 0) {
+                cartBar.classList.remove('hidden');
+                document.getElementById('total-count').innerText = total;
+            } else {
+                cartBar.classList.add('hidden');
+            }
+        }
+
+        // === 4. ENVIAR A WHATSAPP ===
+        function enviarPedido() {
+            const apto = document.getElementById('apto-input').value.trim();
+            if (!apto) {
+                alert('Por favor escribe tu número de apartamento para poder llevarte el pedido.');
+                return;
+            }
+
+            let mensaje = `¡Hola Mario! Quisiera reservar el siguiente pedido para el *${apto}*:\n\n`;
+            
+            for (const [id, cant] of Object.entries(pedido)) {
+                const producto = inventario.find(p => p.id === id);
+                mensaje += `• ${cant}x ${producto.nombre}\n`;
+            }
+
+            mensaje += `\n¡Quedo a la espera para la entrega! 😊`;
+
+            const numeroTelefono = "50254699450";
+            const url = `https://wa.me/${numeroTelefono}?text=${encodeURIComponent(mensaje)}`;
+            window.open(url, '_blank');
+        }
+
+        // Inicializar
+        cargarCatalogo();
+    </script>
+</body>
+</html>
